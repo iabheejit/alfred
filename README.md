@@ -17,8 +17,8 @@ This project presents three innovative solutions for course delivery using AI-po
 
 ## Features
 
-### 1. WhatsApp Flow Static Course
-A structured course delivery system via WhatsApp that simulates a classroom environment.
+### 1. Standard Course
+A structured course delivery system via WhatsApp flows that simulates a classroom environment.
 
 - **Classroom Simulation**: Courses are based on AI-generated reference materials.
 - **Q&A with Vision Capabilities**: Students can ask questions and receive visual support from the AI.
@@ -27,7 +27,6 @@ A structured course delivery system via WhatsApp that simulates a classroom envi
 A personalized learning system powered by AI with extensive course flexibility.
 
 - **AI-Generated Courses**: Backed by **Meta 3.2** with a **90B Vision Instruct** model, learners can study any topic.
-- **Fine-tuned Content**: Courses are curated from trusted sources such as **NCERT/NPTEL** using **Llama 3.1 8B Instruct** model.
 - **Dataset**: Custom generated on textbooks, generated 20k rows https://huggingface.co/datasets/iabheejit/socrates-nptel
 
 ### 3. Edge Llama Access
@@ -39,7 +38,6 @@ An offline-ready model that allows course access and learning without the need f
 
 - **WhatsApp Integration**: Courses and AI interactions delivered seamlessly through WhatsApp.
 - **AI Vision Models**: Vision-powered AI systems that enable Q&A and personalized learning experiences.
-- **Finetuned Meta 3.1 8B Instruct**: A large language model fine-tuned for educational content generation.
 - **Llama Models**: Llama 3.1 and 3.2 models offering inference capabilities for both online and offline use.
 
 <img width="835" alt="image" src="https://github.com/user-attachments/assets/74d5b613-5313-431f-9e43-2f8d50f6306c">

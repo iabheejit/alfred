@@ -25,9 +25,7 @@ A structured course delivery system via WhatsApp flows that simulates a classroo
 
 ### 2. WhatsApp AI Personalized Course
 A personalized learning system powered by AI with extensive course flexibility.
-
 - **AI-Generated Courses**: Backed by **Meta 3.2** with a **90B Vision Instruct** model, learners can study any topic.
-- **Dataset**: Custom generated on textbooks, generated 20k rows https://huggingface.co/datasets/iabheejit/socrates-nptel
 
 ### 3. Edge Llama Access
 An offline-ready model that allows course access and learning without the need for constant internet connectivity.

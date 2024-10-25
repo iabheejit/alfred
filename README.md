@@ -40,8 +40,5 @@ An offline-ready model that allows course access and learning without the need f
 - **AI Vision Models**: Vision-powered AI systems that enable Q&A and personalized learning experiences.
 - **Llama Models**: Llama 3.1 and 3.2 models offering inference capabilities for both online and offline use.
 
-<img width="835" alt="image" src="https://github.com/user-attachments/assets/74d5b613-5313-431f-9e43-2f8d50f6306c">
-
-
 ## How to Contribute
 Contributions are welcome! If you want to help improve these learning tools, feel free to open issues or submit pull requests.

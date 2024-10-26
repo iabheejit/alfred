@@ -17,12 +17,12 @@ warnings.filterwarnings("ignore")
 
 # API configurations
 TUNE_API_URL = "https://proxy.tune.app/chat/completions"
-TUNE_API_KEY = os.environ.get("TUNE_API_KEY", "sk-tune-noF4s7Wn00G0BYf6CHTw2I7D3HvwkxMeJ6x")
+TUNE_API_KEY = os.environ.get("TUNE_API_KEY", "sk-tune-")
 TUNE_ORG_ID = os.environ.get("TUNE_ORG_ID", "")
 TUNE_MODEL_NAME = "meta/llama-3.2-90b-vision"
 
 SARVAM_TTS_URL = "https://api.sarvam.ai/text-to-speech"
-SARVAM_TTS_KEY = "8284730b-1772-4702-a0aa-2d0f0bf4f793"
+SARVAM_TTS_KEY = "4702-a0aa-"
 
 # System prompts
 SYSTEM_PROMPT_ENGLISH = """You are Alfred, a helpful AI assistant by ekatra. Respond directly to the user's input without repeating their messages. Be concise, relevant, and avoid roleplaying or making claims about being a specific gender or person. If you don't understand or can't answer a question, say so politely."""

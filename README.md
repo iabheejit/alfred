@@ -1,6 +1,9 @@
+
+## [Video Pitch](https://youtu.be/5K1CRGapa-Q)
+
 <img width="841" alt="image" src="https://github.com/user-attachments/assets/5e43924d-cf0c-4b92-b953-58ba2123d356">
 
-## [Deck](https://www.canva.com/design/DAGUo1JyExo/RSnvbCgFapENzgeYE67frw/edit?utm_content=DAGUo1JyExo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
+## [Pitch Deck](https://www.canva.com/design/DAGUo1JyExo/RSnvbCgFapENzgeYE67frw/edit?utm_content=DAGUo1JyExo&utm_campaign=designshare&utm_medium=link2&utm_source=sharebutton)
 
 ## Overview
 This project presents three innovative solutions for course delivery using AI-powered models and WhatsApp integration. The solutions are designed to provide learning opportunities in both online and offline environments. 

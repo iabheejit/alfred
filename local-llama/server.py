@@ -1,37 +1,33 @@
 import streamlit as st
 import torch
-from transformers import AutoTokenizer, AutoModelForCausalLM
-from huggingface_hub import login, snapshot_download
-from huggingface_hub.utils import RepositoryNotFoundError, RevisionNotFoundError
+import base64
 import os
 import warnings
 import requests
 import json
-from flask import Flask, request, jsonify
+from flask import Flask, request, jsonify, send_file
 from flask_cors import CORS
 import threading
 import socket
 import time
+import io
 
 # Suppress warnings
 warnings.filterwarnings("ignore")
 
-# Hugging Face configuration
-HF_TOKEN = os.environ.get("HF_TOKEN", "")
-HF_MODEL_NAME = "meta-llama/Llama-3.2-1B-Instruct"
-
-# Tune AI API configuration
+# API configurations
 TUNE_API_URL = "https://proxy.tune.app/chat/completions"
-TUNE_API_KEY = os.environ.get("TUNE_API_KEY", "sk-tune-")
+TUNE_API_KEY = os.environ.get("TUNE_API_KEY", "sk-tune-noF4s7Wn00G0BYf6CHTw2I7D3HvwkxMeJ6x")
 TUNE_ORG_ID = os.environ.get("TUNE_ORG_ID", "")
 TUNE_MODEL_NAME = "meta/llama-3.2-90b-vision"
 
-# System prompt
-SYSTEM_PROMPT = """You are Alfred, a helpful AI assistant by ekatra. Respond directly to the user's input without repeating their messages. Be concise, relevant, and avoid roleplaying or making claims about being a specific gender or person. If you don't understand or can't answer a question, say so politely."""
+SARVAM_TTS_URL = "https://api.sarvam.ai/text-to-speech"
+SARVAM_TTS_KEY = "8284730b-1772-4702-a0aa-2d0f0bf4f793"
 
-# Global variables for model and tokenizer
-global_model = None
-global_tokenizer = None
+# System prompts
+SYSTEM_PROMPT_ENGLISH = """You are Alfred, a helpful AI assistant by ekatra. Respond directly to the user's input without repeating their messages. Be concise, relevant, and avoid roleplaying or making claims about being a specific gender or person. If you don't understand or can't answer a question, say so politely."""
+
+SYSTEM_PROMPT_MARATHI = """तुम्ही एकत्र द्वारे तयार केलेले अल्फ्रेड आहात, एक सहाय्यक AI सहाय्यक. वापरकर्त्याच्या इनपुटला थेट प्रतिसाद द्या, त्यांचे संदेश पुन्हा न सांगता. संक्षिप्त, संबंधित राहा आणि रोल-प्ले करणे किंवा विशिष्ट लिंग किंवा व्यक्ती असल्याचा दावा करणे टाळा. जर तुम्हाला प्रश्न समजत नसेल किंवा उत्तर देता येत नसेल तर विनम्रपणे सांगा."""
 
 # Flask app
 app = Flask(__name__)
@@ -40,10 +36,6 @@ CORS(app)
 # Connected clients
 connected_clients = set()
 
-# Server-side model selection
-USE_LOCAL_MODEL = False  # Set this to False to use the Tune AI API
-
-# Function to get local IP address
 def get_local_ip():
     s = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
     try:
@@ -55,73 +47,43 @@ def get_local_ip():
         s.close()
     return IP
 
-def check_model_availability(model_name):
+def generate_speech(text, language_code="mr-IN"):
+    """Generate speech from text using Sarvam TTS API"""
     try:
-        cache_dir = snapshot_download(model_name, token=HF_TOKEN, local_files_only=True)
-        return True, cache_dir
-    except (RepositoryNotFoundError, RevisionNotFoundError):
-        return False, None
-
-def initialize_model():
-    global global_model, global_tokenizer
-    if not USE_LOCAL_MODEL:
-        print("Using Tune AI API. No local model initialization required.")
-        return None, None
-    try:
-        login(HF_TOKEN, add_to_git_credential=True)
+        payload = {
+            "inputs": [text],
+            "target_language_code": language_code
+        }
+        headers = {
+            "api-subscription-key": SARVAM_TTS_KEY,
+            "Content-Type": "application/json"
+        }
         
-        is_available, cache_dir = check_model_availability(HF_MODEL_NAME)
+        response = requests.post(SARVAM_TTS_URL, json=payload, headers=headers)
+        response.raise_for_status()
         
-        if not is_available:
-            print(f"Model {HF_MODEL_NAME} is not available locally. Downloading... This may take a while.")
-            cache_dir = snapshot_download(HF_MODEL_NAME, token=HF_TOKEN)
-            print("Model downloaded successfully!")
-        else:
-            print(f"Model {HF_MODEL_NAME} found in local cache: {cache_dir}")
+        # Get the base64 encoded audio
+        audio_data = response.json()["audios"][0]
+        return audio_data
         
-        global_tokenizer = AutoTokenizer.from_pretrained(HF_MODEL_NAME, token=HF_TOKEN, cache_dir=cache_dir)
-        global_tokenizer.pad_token = global_tokenizer.eos_token
-        
-        device = "cuda" if torch.cuda.is_available() else "cpu"
-        if device == "cuda":
-            global_model = AutoModelForCausalLM.from_pretrained(
-                HF_MODEL_NAME,
-                torch_dtype=torch.float16,
-                low_cpu_mem_usage=True,
-                device_map="auto",
-                token=HF_TOKEN,
-                cache_dir=cache_dir
-            )
-        else:
-            global_model = AutoModelForCausalLM.from_pretrained(
-                HF_MODEL_NAME,
-                torch_dtype=torch.float32,
-                low_cpu_mem_usage=True,
-                token=HF_TOKEN,
-                cache_dir=cache_dir
-            ).to(device)
-        
-        print("Local model initialized successfully.")
-        return global_model, global_tokenizer
     except Exception as e:
-        print(f"Error initializing model: {str(e)}")
-        return None, None
+        print(f"Error generating speech: {str(e)}")
+        return None
 
-def generate_response_local(prompt):
-    global global_model, global_tokenizer
-    inputs = global_tokenizer(prompt, return_tensors="pt", padding=True).to(global_model.device)
-    with torch.no_grad():
-        output = global_model.generate(**inputs, max_new_tokens=150, temperature=0.7, top_p=0.95)
-    response = global_tokenizer.decode(output[0], skip_special_tokens=True)
-    return response.split("Assistant:")[-1].strip()
-
-def generate_response_api(prompt):
+def generate_response_tune(prompt, language="english"):
     try:
+        # Add language instruction to the prompt for Marathi responses
+        if language == "marathi":
+            system_prompt = SYSTEM_PROMPT_MARATHI
+            prompt = f"Please provide the response in Marathi (मराठी) language only. User query: {prompt}"
+        else:
+            system_prompt = SYSTEM_PROMPT_ENGLISH
+
         payload = {
             "model": TUNE_MODEL_NAME,
             "messages": [
                 {
-                    "content": SYSTEM_PROMPT,
+                    "content": system_prompt,
                     "role": "system"
                 },
                 {
@@ -133,38 +95,78 @@ def generate_response_api(prompt):
             "temperature": 0.7,
             "top_p": 0.95
         }
+        
         headers = {
             "Authorization": f"Bearer {TUNE_API_KEY}",
             "X-Org-Id": TUNE_ORG_ID,
             "Content-Type": "application/json"
         }
+        
         response = requests.post(TUNE_API_URL, json=payload, headers=headers)
         response.raise_for_status()
         
-        response_data = response.json()
-        if 'choices' in response_data and len(response_data['choices']) > 0:
-            return response_data['choices'][0]['message']['content'].strip()
+        response_text = response.json()["choices"][0]["message"]["content"].strip()
+        
+        if language == "marathi":
+            # Generate English response
+            english_payload = {
+                "model": TUNE_MODEL_NAME,
+                "messages": [
+                    {
+                        "content": SYSTEM_PROMPT_ENGLISH,
+                        "role": "system"
+                    },
+                    {
+                        "content": prompt,
+                        "role": "user"
+                    }
+                ],
+                "max_tokens": 150,
+                "temperature": 0.7,
+                "top_p": 0.95
+            }
+            
+            english_response = requests.post(TUNE_API_URL, json=english_payload, headers=headers)
+            english_response.raise_for_status()
+            english_text = english_response.json()["choices"][0]["message"]["content"].strip()
+            
+            # Generate speech for Marathi response
+            audio_data = generate_speech(response_text)
+            
+            return {
+                "english": english_text,
+                "marathi": response_text,
+                "audio": audio_data
+            }
         else:
-            print("Unexpected response format from Tune AI API")
-            return None
-    except requests.RequestException as e:
-        print(f"Error with API request: {str(e)}")
-        return None
-    except json.JSONDecodeError as e:
-        print(f"Error processing API response: {str(e)}")
-        return None
+            return {"response": response_text}
+            
+    except Exception as e:
+        print(f"Error with Tune API request: {str(e)}")
+        return {"error": str(e)}
 
 @app.route('/generate', methods=['POST'])
 def generate():
     data = request.json
     prompt = data.get('prompt')
+    language = data.get('language', 'english')
     
-    if USE_LOCAL_MODEL:
-        response = generate_response_local(prompt)
-    else:
-        response = generate_response_api(prompt)
-    
-    return jsonify({"response": response})
+    response = generate_response_tune(prompt, language)
+    return jsonify(response)
+
+@app.route('/audio/<path:filename>')
+def serve_audio(filename):
+    try:
+        # Convert base64 to audio file
+        audio_data = base64.b64decode(filename)
+        return send_file(
+            io.BytesIO(audio_data),
+            mimetype='audio/wav',
+            as_attachment=True,
+            download_name='response.wav'
+        )
+    except Exception as e:
+        return str(e), 400
 
 @app.route('/connect', methods=['POST'])
 def connect():
@@ -188,7 +190,6 @@ def run_server():
 
 if __name__ == "__main__":
     os.environ["TOKENIZERS_PARALLELISM"] = "false"
-    initialize_model()
     
     local_ip = get_local_ip()
     print(f" * Server running on http://{local_ip}:5000")
@@ -199,7 +200,7 @@ if __name__ == "__main__":
     # Run Streamlit app for server monitoring
     st.title("Inference Server Monitor")
     st.write(f"Server URL: http://{local_ip}:5000")
-    st.write(f"Using {'Local Model' if USE_LOCAL_MODEL else 'Tune AI API'}")
+    st.write("Using Tune API for inference and Sarvam AI for TTS")
     
     # Create a placeholder for the client list
     client_list = st.empty()

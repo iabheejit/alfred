@@ -1,16 +1,4 @@
-<img width="844" alt="Screenshot 2024-10-20 at 11 07 18" src="https://github.com/user-attachments/assets/fa73f3c9-1b3b-4cf3-801a-ed3b91c3d48d">
-
-### Ekatra
-
-**Ekatra** is a platform designed to facilitate learning, communication, and resource distribution, primarily through popular messaging platforms like WhatsApp. By leveraging the simplicity and accessibility of WhatsApp, Ekatra aims to bring education and information to communities that may have limited access to traditional educational resources.
-
-Key Features of Ekatra:
-- **WhatsApp Integration**: Provides learning modules, updates, and communication tools directly through WhatsApp, making it easy for users to engage without requiring specialized apps or technical expertise.
-- **AI-powered Content**: Utilizes artificial intelligence to generate and personalize learning materials based on user needs. Ekatra can cater to different subjects and learning levels.
-- **Offline Accessibility**: Supports local delivery of learning content for users with limited internet access through edge-based AI models.
-- **Community-Centric**: Focuses on delivering educational content that is locally relevant and tailored to the specific needs of underserved communities.
-
-Ekatra's mission is to democratize education by making it accessible anytime, anywhere, using tools and platforms that people are already familiar with, like WhatsApp.
+<img width="841" alt="image" src="https://github.com/user-attachments/assets/5e43924d-cf0c-4b92-b953-58ba2123d356">
 
 ## Overview
 This project presents three innovative solutions for course delivery using AI-powered models and WhatsApp integration. The solutions are designed to provide learning opportunities in both online and offline environments. 
@@ -31,6 +19,8 @@ A personalized learning system powered by AI with extensive course flexibility.
 An offline-ready model that allows course access and learning without the need for constant internet connectivity.
 
 - **Run with/without Internet**: Utilizes **TuneAI** with **Meta 3.2 90B Vision Instruct** for online use, and **Llama 3.2 1B Instruct** for local model inference when offline.
+
+<img width="845" alt="image" src="https://github.com/user-attachments/assets/55727091-63ee-4804-97ef-8bb68f5b7e09">
 
 ## Key Technologies
 
